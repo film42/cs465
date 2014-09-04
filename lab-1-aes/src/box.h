@@ -43,6 +43,7 @@ namespace {
     { 0x17, 0x2b, 0x04, 0x7e, 0xba, 0x77, 0xd6, 0x26, 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d }
 	};
   
+  // EX: 0x46 -> 0x5a
   unsigned int sbox_get(unsigned int input) {
     int first = (input >> 4) & ((1 << 4)-1);
     int second = (input >> 0) & ((1 << 4)-1);
@@ -50,6 +51,7 @@ namespace {
     return sbox_table[first][second];
   }
   
+  // EX: 0x5a -> 0x46
   unsigned int inverse_sbox_get(unsigned int input) {
     int first = (input >> 4) & ((1 << 4)-1);
     int second = (input >> 0) & ((1 << 4)-1);
