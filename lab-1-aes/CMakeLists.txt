@@ -3,8 +3,8 @@
 #
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
-PROJECT(lab_1_aes)
-SET(EXECUTABLE_NAME lab_1_aes)
+PROJECT(lab_1_aes_tests)
+SET(EXECUTABLE_NAME lab_1_aes_tests)
 SET(LIBRARY_NAME aes)
 
 #
@@ -81,14 +81,14 @@ INCLUDE_DIRECTORIES("${GMOCK_PATH}/include")
 FILE(
   GLOB_RECURSE
   SRC_FILES
-  ../src/*
+  src/*
   )
 
 FILE(
   GLOB_RECURSE
   TEST_SRC_FILES
-  fixtures/*
-  src/*
+  test/fixtures/*
+  test/src/*
   )
 
 #
