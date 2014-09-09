@@ -3,11 +3,11 @@
 
 TEST(AESTests, can_convert_string_both_ways) {
   
-  std::string input = "testing";
+  std::string state = "testing";
   
-  auto ciphered_text = substitute_bytes( input );
+  auto ciphered_text = substitute_bytes( state );
   
   EXPECT_EQ( ciphered_text , "\222M\217\222\371\237\205" );
   
-  EXPECT_EQ( input , inverse_substitute_bytes(ciphered_text) );
+  EXPECT_EQ( state , inverse_substitute_bytes(ciphered_text) );
 }
