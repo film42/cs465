@@ -22,6 +22,8 @@ TEST(MathTests, ff_multiply) {
   EXPECT_EQ( 0xA9 , ff_multiply(0x57, 0x12) );
   
   EXPECT_EQ( 0xFE , ff_multiply(0x57, 0x13) );
+
+  EXPECT_EQ( 0xB3 , ff_multiply(0x02, 0xD4) );
   
 }
 
@@ -36,4 +38,14 @@ TEST(MathTests, ff_add) {
                                   ff_multiply(0x57, 0x02),
                                   ff_multiply(0x57, 0x10)) ) );
   
+}
+
+TEST(MathTests, can_add_and_multiply_together) {
+
+  auto result = ff_add( (ff_multiply(0x02, 0xD4)),
+                        (ff_multiply(0x03, 0xBF)),
+                        0x5D,
+                        0x30 );
+
+  EXPECT_EQ( 0x04, result );
 }

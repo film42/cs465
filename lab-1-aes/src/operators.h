@@ -1,8 +1,6 @@
 #ifndef lab_1_aes_tests_operators_h
 #define lab_1_aes_tests_operators_h
 
-#include <cmath>
-
 #include "types.h"
 
 namespace {
@@ -24,34 +22,27 @@ namespace {
     // return
     return (byte_t)s;
   }
-  
+
   //
   // Finite Field Operators
   //
-  static byte_t ff_multiply( byte_t x, byte_t y ) {
-    byte_t acc = x;
-    byte_t i = y;
-    while( i > 0x01 ) {
-      acc = x_time( acc );
-      i >>= 0x01;
+  // SOURCE: http://www.samiam.org/galois.html
+  //
+  byte_t ff_multiply(byte_t a, byte_t b) {
+    byte_t p = 0;
+    byte_t counter;
+    byte_t hi_bit_set;
+    for(counter = 0; counter < 8; counter++) {
+      if((b & 1) == 1)
+        p ^= a;
+      hi_bit_set = (a & 0x80);
+      a <<= 1;
+      if(hi_bit_set == 0x80)
+        a ^= 0x1b;
+      b >>= 1;
     }
-
-    if( (y & 0x01) == 0x01 ) {
-      acc = ff_add( acc, x );
-      // Decrement the y to note we accounted for the odd bit
-      y -= 0x01;
-    }
-
-    if( (y - 0x10) > 0 ) {
-      // We guarantee to handle up to 0x10 per iteration, recurse if `y` exceeds this
-      auto res = ff_multiply( x , (y - 0x10) );
-      // Add what was found
-      acc = ff_add( acc, res );
-    }
-
-    return acc;
+    return p;
   }
-
 }
 
 #endif
