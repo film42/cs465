@@ -7,9 +7,14 @@
 
 #include "box.h"
 #include "operators.h"
+#include "constants.h"
+#include "utils.h"
 
 namespace {
 
+  //
+  // Mix Columns
+  //
   std::string mix_column(std::string column) {
 
     std::string r = column;
@@ -54,6 +59,9 @@ namespace {
     return col_1 + col_2 + col_3 + col_4;
   }
 
+  //
+  // Shift Rows
+  //
   std::string shift_rows(std::string state) {
     std::ostringstream ostream;
 
@@ -65,12 +73,15 @@ namespace {
     return ostream.str();
   }
 
-  std::string substitute_bytes(std::string state) {
+  //
+  // Substitute Bytes
+  //
+  std::string substitute_bytes(std::string input) {
     
     std::string converted;
-    converted.reserve( state.size() );
+    converted.reserve( input.size() );
     
-    for( byte_t c : state ) {
+    for( byte_t c : input ) {
       // Convert
       auto ciphered_char = sbox_get(c);
       // Add the converted byte
@@ -80,12 +91,12 @@ namespace {
     return converted;
   }
   
-  std::string inverse_substitute_bytes(std::string state) {
+  std::string inverse_substitute_bytes(std::string input) {
     
     std::string converted;
-    converted.reserve( state.size() );
+    converted.reserve( input.size() );
     
-    for( byte_t c : state ) {
+    for( byte_t c : input ) {
       // Undo conversion
       auto ciphered_char = inverse_sbox_get(c);
       // Add the original byte
@@ -93,6 +104,82 @@ namespace {
     }
     
     return converted;
+  }
+
+  //
+  // Round Key
+  //
+  std::string add_round_key(std::string state, std::string round_key) {
+  
+    std::cout << state.length() << std::endl;
+    std::cout << round_key << std::endl;
+
+    for(int i = 0; i < state.size(); ++i) {
+      state[i] = ff_add( state[i], round_key[i] );
+    }
+
+    return state;
+  }
+
+  std::string inverse_add_round_key(std::string state, std::string round_key) {
+    return add_round_key(state, round_key);
+  }
+
+  //
+  // Rotate Word
+  //
+  // RotWord() takes a word [a0,a1,a2,a3] as input, performs a cyclic permutation, and returns the
+  // word [a1,a2,a3,a0].
+  std::string rotate_word(std::string word) {
+    std::ostringstream ostream;
+
+    ostream << word[1] << word[2] << word[3] << word[0];
+
+    return ostream.str();
+  }
+
+  //
+  // Substitute Word
+  //
+  // SubWord() is a function that takes a four-byte input word and applies the S-box (Sec. 5.1.1,
+  // Fig. 7) to each of the four bytes to produce an output word.
+  std::string substitute_word(std::string word) {
+    return substitute_bytes( word );
+  }
+
+  //
+  // Key Expansion
+  //
+  /* KeyExpansion(byte key[4*Nk], word w[Nb*(Nr+1)], Nk) */
+  std::vector<std::string> key_expansion(std::string key, std::string state, size_t nk = 4) {
+
+    // Get our words vector
+    auto words = make_word_vector( state );
+
+    std::string temp; // temp word
+    // TODO: Set these: currently only for 128bits
+    size_t i = 0, nb = 4, nr = 10;
+
+    for(; i < nk; ++i) {
+      words[i] = make_word(key[4*i], key[4*i+1], key[4*i+2], key[4*i+3]);
+    }
+
+    for(i = nk; i < nb * (nr+1); ++i) {
+      temp = words[i - 1];
+      if( (i % nk) == 0 ) {
+        temp = substitute_word( rotate_word( temp ) );
+        // Using add round key, and a string create.
+        add_round_key( make_word(round_constant[ i/nk ]), temp );
+      }
+      else if(nk > 6 && (i % nk) == 4 ) {
+        temp = substitute_word( temp );
+      }
+
+      // Using add round key because it will xor a string
+      words[i] = add_round_key( words[i-nk], temp );
+    }
+
+    return words;
   }
 
 }
