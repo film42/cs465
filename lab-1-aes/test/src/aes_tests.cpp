@@ -1,5 +1,6 @@
 #include "test_helper.h"
 #include "aes.h"
+#include "utils.h"
 
 TEST(AESTests, can_convert_string_both_ways) {
   
@@ -90,6 +91,24 @@ TEST(AESTests, can_rotate_word) {
 
 }
 
+TEST(AESTests, can_do_key_expansion_in_tests) {
+
+  auto temp = make_word(0x64636261);
+  auto after_rotate = make_word(0x63626164);
+  auto after_sub_word = make_word(0xfbaaef43);
+  auto after_rconn = make_word(0x01000000);
+  auto after_xor_rconn = make_word(0xfaaaef43);
+  auto w_i_minus_nk = make_word(0x706f6e6d);
+  auto after_all = make_word(0x8ac5812e);
+
+
+  EXPECT_EQ( after_rotate , rotate_word(temp) );
+  EXPECT_EQ( after_sub_word , substitute_word(after_rotate) );
+  EXPECT_EQ( after_rconn , make_word( round_constant[1] ) );
+  EXPECT_EQ( after_xor_rconn , ff_add(after_rconn, after_sub_word) );
+  EXPECT_EQ( after_all , ff_add(after_xor_rconn, w_i_minus_nk) );
+}
+
 TEST(AESTests, can_do_key_expansion) {
 
   auto state = "abcdefghijklmnop";
@@ -97,5 +116,10 @@ TEST(AESTests, can_do_key_expansion) {
 
   auto expanded_key = key_expansion(key, state);
 
-  std::cout << expanded_key.size() << std::endl;
+  EXPECT_EQ( 44 , expanded_key.size() );
+
+  EXPECT_EQ( make_word(0x8ac5812e), expanded_key[4] );
+  EXPECT_EQ( make_word(0xa01a65af), expanded_key[14] );
+  EXPECT_EQ( make_word(0xe83e0bde), expanded_key[24] );
+  EXPECT_EQ( make_word(0x786fb036), expanded_key[43] );
 }

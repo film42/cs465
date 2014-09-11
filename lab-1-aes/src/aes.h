@@ -110,15 +110,7 @@ namespace {
   // Round Key
   //
   std::string add_round_key(std::string state, std::string round_key) {
-  
-    std::cout << state.length() << std::endl;
-    std::cout << round_key << std::endl;
-
-    for(int i = 0; i < state.size(); ++i) {
-      state[i] = ff_add( state[i], round_key[i] );
-    }
-
-    return state;
+    return ff_add(state, round_key);
   }
 
   std::string inverse_add_round_key(std::string state, std::string round_key) {
@@ -152,13 +144,14 @@ namespace {
   //
   /* KeyExpansion(byte key[4*Nk], word w[Nb*(Nr+1)], Nk) */
   std::vector<std::string> key_expansion(std::string key, std::string state, size_t nk = 4) {
-
-    // Get our words vector
-    auto words = make_word_vector( state );
-
-    std::string temp; // temp word
     // TODO: Set these: currently only for 128bits
     size_t i = 0, nb = 4, nr = 10;
+
+    // Get our words vector
+    size_t size = nb * (nr + 1);
+    auto words = make_word_vector( state, size );
+
+    std::string temp; // temp word
 
     for(; i < nk; ++i) {
       words[i] = make_word(key[4*i], key[4*i+1], key[4*i+2], key[4*i+3]);
@@ -168,15 +161,16 @@ namespace {
       temp = words[i - 1];
       if( (i % nk) == 0 ) {
         temp = substitute_word( rotate_word( temp ) );
-        // Using add round key, and a string create.
-        add_round_key( make_word(round_constant[ i/nk ]), temp );
+        // Using ff_add, and a string create.
+        temp = ff_add( make_word(round_constant[ i/nk ]), temp );
       }
       else if(nk > 6 && (i % nk) == 4 ) {
         temp = substitute_word( temp );
       }
 
-      // Using add round key because it will xor a string
-      words[i] = add_round_key( words[i-nk], temp );
+      // Using ff_add because it will xor a string
+      auto new_word = ff_add( words[i-nk], temp );
+      words[i] = new_word;
     }
 
     return words;

@@ -21,10 +21,11 @@ namespace {
   std::string make_word(unsigned int number) {
 
     std::string output;
-    output.reserve(16);
+    output.reserve(8);
 
-    for(int i = 0; i < 16; ++i) {
-      char c = (char)( (number >> (i * 4)) & ((1 << 4)-1) );
+    // Start at n-2 = 6
+    for(int i = 6; i >= 0; i -= 2) {
+      char c = (char)( (number >> (i * 4)) & ((1 << 8)-1) );
       output.push_back( c );
     }
 
@@ -34,14 +35,16 @@ namespace {
   //
   // Make word vector from state string
   //
-  std::vector<std::string> make_word_vector( std::string state ) {
+  std::vector<std::string> make_word_vector( std::string state, size_t size ) {
 
-    auto col_1 = state.substr(0,4);
-    auto col_2 = state.substr(4,4);
-    auto col_3 = state.substr(8,4);
-    auto col_4 = state.substr(12);
+    std::vector<std::string> output( size );
 
-    return { col_1, col_2, col_3, col_4 };
+    output[0] = state.substr(0,4);
+    output[1] = state.substr(4,4);
+    output[2] = state.substr(8,4);
+    output[3] = state.substr(12);
+
+    return output;
   }
 
 }

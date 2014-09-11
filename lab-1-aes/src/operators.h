@@ -14,6 +14,15 @@ namespace {
     return a ^ b ^ c ^ d;
   }
 
+  static std::string ff_add(std::string a, std::string b) {
+
+    for(int i = 0; i < a.length(); ++i) {
+      a[i] = a[i] ^ b[i];
+    }
+
+    return a;
+  }
+
   static byte_t x_time( byte_t x ) {
     // bit-shift once
     int s = (x << 0x01);
