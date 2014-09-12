@@ -2,7 +2,7 @@
 #include "aes.h"
 #include "utils.h"
 
-TEST(AESTests, can_convert_string_both_ways) {
+TEST(AESTests, can_substitute_bytes) {
   
   std::string state = "testing";
   
