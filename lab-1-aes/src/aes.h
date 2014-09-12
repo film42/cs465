@@ -156,9 +156,9 @@ namespace {
   // Key Expansion
   //
   /* KeyExpansion(byte key[4*Nk], word w[Nb*(Nr+1)], Nk) */
-  std::vector<std::string> key_expansion(std::string key, size_t nk = 4) {
-    // TODO: Set these: currently only for 128bits
-    size_t i = 0, nb = 4, nr = 10;
+  std::vector<std::string> key_expansion(std::string key, size_t nk, size_t nr) {
+
+    size_t i = 0, nb = 4;
 
     // Get our words vector
     size_t size = nb * (nr + 1);
@@ -189,17 +189,29 @@ namespace {
     return words;
   }
 
+  std::vector<std::string> key_expansion_128_bit(std::string key) {
+    return key_expansion(key, 4, 10);
+  }
+
+  std::vector<std::string> key_expansion_192_bit(std::string key) {
+    return key_expansion(key, 6, 12);
+  }
+
+  std::vector<std::string> key_expansion_256_bit(std::string key) {
+    return key_expansion(key, 8, 14);
+  }
+
   //
   // AES Cipher
   //
-  std::string cipher(std::string state, std::vector<std::string> key_schedule) {
+  std::string cipher(std::string state, std::vector<std::string> key_schedule, size_t nr) {
     // TODO: Set these: currently only for 128bits
-    size_t i = 0, nb = 4, nr = 10;
+    size_t i = 0, nb = 4;
 
     state = add_round_key( state, partition(key_schedule, 0, (nb-1) ) );
 
     // Loop through each round
-    for(int round = 1; round <= (nr -1); ++round) {
+    for(int round = 1; round <= (nr - 1); ++round) {
       state = substitute_bytes( state );
       state = shift_rows( state );
       state = mix_columns( state );
@@ -214,34 +226,26 @@ namespace {
     return state;
   }
 
-  /*
-  InvCipher(byte in[4*Nb], byte out[4*Nb], word w[Nb*(Nr+1)])
-  begin
-    byte state[4,Nb]
-    state = in
+  std::string cipher_128_bit(std::string state, std::vector<std::string> key_schedule) {
+    return cipher(state, key_schedule, 10);
+  }
 
-    AddRoundKey(state, w[Nr*Nb, (Nr+1)*Nb-1]) // See Sec. 5.1.4
+  std::string cipher_192_bit(std::string state, std::vector<std::string> key_schedule) {
+    return cipher(state, key_schedule, 12);
+  }
 
-    for round = Nr-1 step -1 downto 1
-      InvShiftRows(state) // See Sec. 5.3.1
-      InvSubBytes(state) // See Sec. 5.3.2
-      AddRoundKey(state, w[round*Nb, (round+1)*Nb-1])
-      InvMixColumns(state) // See Sec. 5.3.3
-    end for
+  std::string cipher_256_bit(std::string state, std::vector<std::string> key_schedule) {
+    return cipher(state, key_schedule, 14);
+  }
 
-    InvShiftRows(state)
-    InvSubBytes(state)
-    AddRoundKey(state, w[0, Nb-1])
-    out = state
-  end
-  */
+
 
   //
   // AES Inverse Cipher
   //
-  std::string inverse_cipher(std::string state, std::vector<std::string> key_schedule) {
+  std::string inverse_cipher(std::string state, std::vector<std::string> key_schedule, size_t nr) {
     // TODO: Set these: currently only for 128bits
-    size_t i = 0, nb = 4, nr = 10;
+    size_t i = 0, nb = 4;
 
     state = inverse_add_round_key(state, partition(key_schedule, (nr*nb), ((nr+1) * nb-1) ) );
 
@@ -257,6 +261,18 @@ namespace {
     state = add_round_key(state, partition(key_schedule, 0, (nb-1) ) );
 
     return state;
+  }
+
+  std::string inverse_cipher_128_bit(std::string state, std::vector<std::string> key_schedule) {
+    return inverse_cipher(state, key_schedule, 10);
+  }
+
+  std::string inverse_cipher_192_bit(std::string state, std::vector<std::string> key_schedule) {
+    return inverse_cipher(state, key_schedule, 12);
+  }
+
+  std::string inverse_cipher_256_bit(std::string state, std::vector<std::string> key_schedule) {
+    return inverse_cipher(state, key_schedule, 14);
   }
 
 }

@@ -117,7 +117,7 @@ TEST(AESTests, can_do_key_expansion) {
 
   auto key = "ponmlkjihgfedcba";
 
-  auto expanded_key = key_expansion(key);
+  auto expanded_key = key_expansion_128_bit(key);
 
   EXPECT_EQ( 44 , expanded_key.size() );
 
@@ -127,7 +127,7 @@ TEST(AESTests, can_do_key_expansion) {
   EXPECT_EQ( make_word(0x786fb036), expanded_key[43] );
 }
 
-TEST(AESTests, can_run_cipher_with_state_and_key) {
+TEST(AESTests, can_encrypt_decrypt_128_bit_cipher) {
 
   auto state = "abcdefghijklmnop";
   // 0f 15 71 c9 47 d9 e8 59 0c b7 ad d6 af 7f 67 98
@@ -135,7 +135,7 @@ TEST(AESTests, can_run_cipher_with_state_and_key) {
   // 11 0a af f3 f2 d5 6c 9e 69 1a 95 a5 2e 19 28 eb
   auto expected = make_word(0x110aaff3) + make_word(0xf2d56c9e) + make_word(0x691a95a5) + make_word(0x2e1928eb);
 
-  auto key_schedule = key_expansion(key);
+  auto key_schedule = key_expansion_128_bit(key);
 
   // Another Key Schedule Test
   EXPECT_EQ( 44 , key_schedule.size() );
@@ -143,11 +143,61 @@ TEST(AESTests, can_run_cipher_with_state_and_key) {
   EXPECT_EQ( make_word(0x86261876) , key_schedule[43] );
 
   // Let's run AES
-  auto cipher_text = cipher(state, key_schedule);
+  auto cipher_text = cipher_128_bit(state, key_schedule);
 
   EXPECT_EQ( expected , cipher_text );
 
-  auto deciphered_text = inverse_cipher(cipher_text, key_schedule);
+  auto deciphered_text = inverse_cipher_128_bit(cipher_text, key_schedule);
+
+  EXPECT_EQ( state , deciphered_text );
+}
+
+TEST(AESTests, can_encrypt_decrypt_192_bit_cipher) {
+
+  auto state = "abcdefghijklmnop";
+  auto key =      make_word(0x04050607) + make_word(0x090A0B0C) + make_word(0x0E0F1011) + make_word(0x13141516) + make_word(0x18191A1B) + make_word(0x1D1E1F20);
+  auto expected = make_word(0x5b884ef6) + make_word(0xe3467cc0) + make_word(0x1fcc657e) + make_word(0xc9153867);
+
+  auto key_schedule = key_expansion_192_bit(key);
+
+  // Another Key Schedule Test
+  EXPECT_EQ( 52 , key_schedule.size() );
+  EXPECT_EQ( make_word(0x77c5b1a3) , key_schedule[6] );
+  EXPECT_EQ( make_word(0xf8c1c186) , key_schedule[51] );
+
+  // Let's run AES
+  auto cipher_text = cipher_192_bit(state, key_schedule);
+
+  EXPECT_EQ( expected , cipher_text );
+
+  auto deciphered_text = inverse_cipher_192_bit(cipher_text, key_schedule);
+
+  EXPECT_EQ( state , deciphered_text );
+
+}
+
+TEST(AESTests, can_encrypt_decrypt_256_bit_cipher) {
+
+  auto state = "abcdefghijklmnop";
+  // 08090A0B 0D0E0F10 12131415 1718191A 1C1D1E1F 21222324 26272829 2B2C2D2E
+  auto key =      make_word(0x08090A0B) + make_word(0x0D0E0F10) + make_word(0x12131415) + make_word(0x1718191A) + make_word(0x1C1D1E1F) + make_word(0x21222324)
+           +      make_word(0x26272829) + make_word(0x2B2C2D2E);
+
+  auto expected = make_word(0x1dbfc510) + make_word(0x95d18757) + make_word(0xc40437f5) + make_word(0x4f9ee6ce);
+
+  auto key_schedule = key_expansion_256_bit(key);
+
+  // Another Key Schedule Test
+  EXPECT_EQ( 60 , key_schedule.size() );
+  EXPECT_EQ( make_word(0x78d13bfa) , key_schedule[8] );
+  EXPECT_EQ( make_word(0x1c9e9079) , key_schedule[59] );
+
+  // Let's run AES
+  auto cipher_text = cipher_256_bit(state, key_schedule);
+
+  EXPECT_EQ( expected , cipher_text );
+
+  auto deciphered_text = inverse_cipher_256_bit(cipher_text, key_schedule);
 
   EXPECT_EQ( state , deciphered_text );
 
