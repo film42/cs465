@@ -35,23 +35,30 @@ namespace {
   //
   // Finite Field Operators
   //
-  // SOURCE: http://www.samiam.org/galois.html
-  //
-  byte_t ff_multiply(byte_t a, byte_t b) {
-    byte_t p = 0;
-    byte_t counter;
-    byte_t hi_bit_set;
-    for(counter = 0; counter < 8; counter++) {
-      if((b & 1) == 1)
-        p ^= a;
-      hi_bit_set = (a & 0x80);
-      a <<= 1;
-      if(hi_bit_set == 0x80)
-        a ^= 0x1b;
-      b >>= 1;
+  static byte_t ff_multiply( byte_t x, byte_t y ) {
+
+    // Set the product to 0
+    byte_t product = 0x00;
+
+    // Iterate through each bit
+    for(int i = 0; i < 8; ++i) {
+
+      // Check for odd bit
+      if( (y & 0x01) == 0x01 ) {
+        product = ff_add(product, x);
+      }
+
+      // Call to x_time
+      x = x_time(x);
+
+      // slide y for next iteration
+      y >>= 1;
     }
-    return p;
+
+    // Return the product
+    return product;
   }
+
 }
 
 #endif
