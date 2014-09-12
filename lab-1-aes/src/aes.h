@@ -74,6 +74,18 @@ namespace {
     return ostream.str();
   }
 
+  std::string inverse_shift_rows(std::string state) {
+
+    std::ostringstream ostream;
+
+    ostream << state[0] << state[13] << state[10] << state[7];
+    ostream << state[4] << state[1] << state[14] << state[11];
+    ostream << state[8] << state[5] << state[2] << state[15];
+    ostream << state[12] << state[9] << state[6] << state[3];
+
+    return ostream.str();
+  }
+
   //
   // Substitute Bytes
   //
@@ -185,9 +197,9 @@ namespace {
     size_t i = 0, nb = 4, nr = 10;
 
     state = add_round_key( state, partition(key_schedule, 0, (nb-1) ) );
-    
+
     // Loop through each round
-    for(int round = 1; round < (nr); ++round) {
+    for(int round = 1; round <= (nr -1); ++round) {
       state = substitute_bytes( state );
       state = shift_rows( state );
       state = mix_columns( state );
@@ -198,6 +210,51 @@ namespace {
     state = substitute_bytes( state );
     state = shift_rows( state );
     state = add_round_key( state, partition(key_schedule, (nr * nb), ((nr+1) * nb-1) ) );
+
+    return state;
+  }
+
+  /*
+  InvCipher(byte in[4*Nb], byte out[4*Nb], word w[Nb*(Nr+1)])
+  begin
+    byte state[4,Nb]
+    state = in
+
+    AddRoundKey(state, w[Nr*Nb, (Nr+1)*Nb-1]) // See Sec. 5.1.4
+
+    for round = Nr-1 step -1 downto 1
+      InvShiftRows(state) // See Sec. 5.3.1
+      InvSubBytes(state) // See Sec. 5.3.2
+      AddRoundKey(state, w[round*Nb, (round+1)*Nb-1])
+      InvMixColumns(state) // See Sec. 5.3.3
+    end for
+
+    InvShiftRows(state)
+    InvSubBytes(state)
+    AddRoundKey(state, w[0, Nb-1])
+    out = state
+  end
+  */
+
+  //
+  // AES Inverse Cipher
+  //
+  std::string inverse_cipher(std::string state, std::vector<std::string> key_schedule) {
+    // TODO: Set these: currently only for 128bits
+    size_t i = 0, nb = 4, nr = 10;
+
+    state = inverse_add_round_key(state, partition(key_schedule, (nr*nb), ((nr+1) * nb-1) ) );
+
+    for(size_t round = (nr - 1); round >= 1; --round) {
+      state = inverse_shift_rows(state);
+      state = inverse_substitute_bytes(state);
+      state = inverse_add_round_key(state, partition(key_schedule, (round*nb), ((round+1) * nb-1) ) );
+      state = inverse_mix_columns(state);
+    }
+
+    state = inverse_shift_rows(state);
+    state = inverse_substitute_bytes(state);
+    state = add_round_key(state, partition(key_schedule, 0, (nb-1) ) );
 
     return state;
   }

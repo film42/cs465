@@ -1,3 +1,4 @@
+#include <Python/Python.h>
 #include "test_helper.h"
 #include "aes.h"
 #include "utils.h"
@@ -20,6 +21,8 @@ TEST(AESTests, can_shift_rows) {
   std::string shifted_row_state = "afkpejodinchmbgl";
 
   EXPECT_EQ( shifted_row_state, shift_rows(state) );
+
+  EXPECT_EQ( state , inverse_shift_rows(shifted_row_state) );
 }
 
 TEST(AESTests, can_mix_single_column) {
@@ -143,5 +146,9 @@ TEST(AESTests, can_run_cipher_with_state_and_key) {
   auto cipher_text = cipher(state, key_schedule);
 
   EXPECT_EQ( expected , cipher_text );
+
+  auto deciphered_text = inverse_cipher(cipher_text, key_schedule);
+
+  EXPECT_EQ( state , deciphered_text );
 
 }
