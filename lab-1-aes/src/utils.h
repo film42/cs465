@@ -13,9 +13,14 @@ namespace {
   //
   std::string make_word(char a, char b, char c, char d) {
 
-    char _slot[] = { a, b, c, d, '\0' };
+    std::ostringstream ostream;
 
-    return std::string(_slot);
+    ostream << a;
+    ostream << b;
+    ostream << c;
+    ostream << d;
+
+    return ostream.str();
   }
 
   std::string make_word(int number) {

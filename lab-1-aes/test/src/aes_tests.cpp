@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "test_helper.h"
 #include "aes.h"
 #include "utils.h"
@@ -199,5 +201,29 @@ TEST(AESTests, can_encrypt_decrypt_256_bit_cipher) {
   auto deciphered_text = inverse_cipher_256_bit(cipher_text, key_schedule);
 
   EXPECT_EQ( state , deciphered_text );
+}
 
+TEST(AESTests, passoff_test) {
+
+  auto state = make_word(0x00112233) + make_word(0x44556677) + make_word(0x8899aabb) + make_word(0xccddeeff);
+
+  // 000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F
+  auto key = make_word(0x00010203) + make_word(0x04050607) + make_word(0x08090a0b) + make_word(0x0c0d0e0f) + make_word(0x10111213)
+           + make_word(0x14151617) + make_word(0x18191a1b) + make_word(0x1c1d1e1f);
+
+  auto expect = make_word(0x8ea2b7ca) + make_word(0x516745bf) + make_word(0xeafc4990) + make_word(0x4b496089);
+
+  auto key_schedule = key_expansion_256_bit(key);
+
+  EXPECT_EQ( 60 , key_schedule.size() );
+  EXPECT_EQ( make_word(0xa573c29f) , key_schedule[8] );
+  EXPECT_EQ( make_word(0x6d68de36) , key_schedule[59] );
+
+  auto ciphered_text = cipher_256_bit( state, key_schedule );
+
+  EXPECT_EQ( expect , ciphered_text );
+
+  auto deciphered_text = inverse_cipher_256_bit(ciphered_text, key_schedule);
+
+  EXPECT_EQ( state , deciphered_text );
 }

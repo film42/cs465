@@ -183,6 +183,9 @@ namespace {
 
       // Using ff_add because it will xor a string
       auto new_word = ff_add( words[i-nk], temp );
+
+//      std::cout << string_to_hex(new_word) << std::endl;
+
       words[i] = new_word;
     }
 
@@ -205,7 +208,7 @@ namespace {
   // AES Cipher
   //
   std::string cipher(std::string state, std::vector<std::string> key_schedule, size_t nr) {
-    // TODO: Set these: currently only for 128bits
+
     size_t i = 0, nb = 4;
 
     state = add_round_key( state, partition(key_schedule, 0, (nb-1) ) );
@@ -242,7 +245,7 @@ namespace {
   // AES Inverse Cipher
   //
   std::string inverse_cipher(std::string state, std::vector<std::string> key_schedule, size_t nr) {
-    // TODO: Set these: currently only for 128bits
+
     size_t i = 0, nb = 4;
 
     state = inverse_add_round_key(state, partition(key_schedule, (nr*nb), ((nr+1) * nb-1) ) );
