@@ -238,8 +238,6 @@ namespace {
     return cipher(state, key_schedule, 14);
   }
 
-
-
   //
   // AES Inverse Cipher
   //
