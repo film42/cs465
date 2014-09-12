@@ -1,4 +1,3 @@
-#include <Python/Python.h>
 #include "test_helper.h"
 #include "aes.h"
 #include "utils.h"
