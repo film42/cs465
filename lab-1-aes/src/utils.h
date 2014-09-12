@@ -18,32 +18,52 @@ namespace {
     return std::string(_slot);
   }
 
-  std::string make_word(unsigned int number) {
+  std::string make_word(int number) {
 
-    std::string output;
-    output.reserve(8);
+    std::ostringstream ostream;
 
     // Start at n-2 = 6
     for(int i = 6; i >= 0; i -= 2) {
-      char c = (char)( (number >> (i * 4)) & ((1 << 8)-1) );
-      output.push_back( c );
+      byte_t c = (byte_t)( (number >> (byte_t)(i * 4)) & ((1 << 8)-1) );
+
+      ostream << (unsigned char)c;
     }
 
-    return output;
+    return ostream.str();
   }
 
   //
-  // Make word vector from state string
+  // Make word vector
   //
-  std::vector<std::string> make_word_vector( std::string state, size_t size ) {
+  std::vector<std::string> make_word_vector(size_t size ) {
 
-    std::vector<std::string> output( size );
+    return std::vector<std::string>(size);
 
-    output[0] = state.substr(0,4);
-    output[1] = state.substr(4,4);
-    output[2] = state.substr(8,4);
-    output[3] = state.substr(12);
+  }
 
+  std::string partition(std::vector<std::string> collection, size_t start, size_t end) {
+
+    std::string result;
+
+    for(size_t i = start; i <= end; ++i) {
+      result += collection[i];
+    }
+
+    return result;
+  }
+
+  std::string string_to_hex(std::string input) {
+    static const char* const lut = "0123456789ABCDEF";
+    size_t len = input.length();
+
+    std::string output;
+    output.reserve(2 * len);
+    for (size_t i = 0; i < len; ++i)
+    {
+      const byte_t c = input[i];
+      output.push_back(lut[c >> 4]);
+      output.push_back(lut[c & 15]);
+    }
     return output;
   }
 

@@ -17,18 +17,16 @@ TEST(AESTests, can_shift_rows) {
 
   std::string state = "abcdefghijklmnop";
 
-  std::string shifted_row_state = "aeimfjnbkocgpdhl";
+  std::string shifted_row_state = "afkpejodinchmbgl";
 
   EXPECT_EQ( shifted_row_state, shift_rows(state) );
 }
 
 TEST(AESTests, can_mix_single_column) {
 
-  char state_col[] = { (char)0xd4, (char)0xbf, (char)0x5d, (char)0x30, '\0' };
-  std::string state( state_col, 4 );
+  std::string state = make_word(0x9f08b49b);
 
-  char result_col[] = { (char)0x04, (char)0x66, (char)0x81, (char)0xe5, '\0' };
-  std::string result( result_col, 4 );
+  std::string result = make_word(0x12d3522b);
 
   EXPECT_EQ( result, mix_column(state) );
 
@@ -38,9 +36,12 @@ TEST(AESTests, can_mix_single_column) {
 
 TEST(AESTests, can_mix_columns) {
 
-  std::string state = "abcdefghijklmnop";
+  auto state = make_word(0xbeab3859) + make_word(0x82978237) + make_word(0xf493292d) + make_word(0x79d971c5);
+  auto result = make_word(0xe0e28ef8) + make_word(0x081d53e6) + make_word(0x599f42e7) + make_word(0x368616b2);
 
   std::string mixed_state = mix_columns(state);
+
+  EXPECT_EQ( result, mixed_state );
 
   EXPECT_EQ( state, inverse_mix_columns(mixed_state) );
 
@@ -111,10 +112,9 @@ TEST(AESTests, can_do_key_expansion_in_tests) {
 
 TEST(AESTests, can_do_key_expansion) {
 
-  auto state = "abcdefghijklmnop";
   auto key = "ponmlkjihgfedcba";
 
-  auto expanded_key = key_expansion(key, state);
+  auto expanded_key = key_expansion(key);
 
   EXPECT_EQ( 44 , expanded_key.size() );
 
@@ -122,4 +122,26 @@ TEST(AESTests, can_do_key_expansion) {
   EXPECT_EQ( make_word(0xa01a65af), expanded_key[14] );
   EXPECT_EQ( make_word(0xe83e0bde), expanded_key[24] );
   EXPECT_EQ( make_word(0x786fb036), expanded_key[43] );
+}
+
+TEST(AESTests, can_run_cipher_with_state_and_key) {
+
+  auto state = "abcdefghijklmnop";
+  // 0f 15 71 c9 47 d9 e8 59 0c b7 ad d6 af 7f 67 98
+  auto key =      make_word(0x0f1571c9) + make_word(0x47d9e859) + make_word(0x0cb7add6) + make_word(0xaf7f6798);
+  // 11 0a af f3 f2 d5 6c 9e 69 1a 95 a5 2e 19 28 eb
+  auto expected = make_word(0x110aaff3) + make_word(0xf2d56c9e) + make_word(0x691a95a5) + make_word(0x2e1928eb);
+
+  auto key_schedule = key_expansion(key);
+
+  // Another Key Schedule Test
+  EXPECT_EQ( 44 , key_schedule.size() );
+  EXPECT_EQ( make_word(0xdc9037b0) , key_schedule[4] );
+  EXPECT_EQ( make_word(0x86261876) , key_schedule[43] );
+
+  // Let's run AES
+  auto cipher_text = cipher(state, key_schedule);
+
+  EXPECT_EQ( expected , cipher_text );
+
 }

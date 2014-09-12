@@ -19,10 +19,10 @@ namespace {
 
     std::string r = column;
 
-    r[0] = ff_add( (ff_multiply(0x02, column[0])), (ff_multiply(0x03, column[1])), column[2], column[3] );
-    r[1] = ff_add( column[0], (ff_multiply(0x02, column[1])), (ff_multiply(0x03, column[2])), column[3] );
-    r[2] = ff_add( column[0], column[1], (ff_multiply(0x02, column[2])), (ff_multiply(0x03, column[3])) );
-    r[3] = ff_add( (ff_multiply(0x03, column[0])), column[1], column[2], (ff_multiply(0x02, column[3])) );
+    r[0] = ff_add( (ff_multiply(0x02, (byte_t)column[0])), (ff_multiply(0x03, (byte_t)column[1])), (byte_t)column[2], (byte_t)column[3] );
+    r[1] = ff_add( (byte_t)column[0], (ff_multiply(0x02, (byte_t)column[1])), (ff_multiply(0x03, (byte_t)column[2])), (byte_t)column[3] );
+    r[2] = ff_add( (byte_t)column[0], (byte_t)column[1], (ff_multiply(0x02, (byte_t)column[2])), (ff_multiply(0x03, (byte_t)column[3])) );
+    r[3] = ff_add( (ff_multiply(0x03, (byte_t)column[0])), (byte_t)column[1], (byte_t)column[2], (ff_multiply(0x02, (byte_t)column[3])) );
 
     return r;
   }
@@ -63,12 +63,13 @@ namespace {
   // Shift Rows
   //
   std::string shift_rows(std::string state) {
+
     std::ostringstream ostream;
 
-    ostream << state[0] << state[4] << state[8] << state[12];
-    ostream << state[5] << state[9] << state[13] << state[1];
-    ostream << state[10] << state[14] << state[2] << state[6];
-    ostream << state[15] << state[3] << state[7] << state[11];
+    ostream << state[0] << state[5] << state[10] << state[15];
+    ostream << state[4] << state[9] << state[14] << state[3];
+    ostream << state[8] << state[13] << state[2] << state[7];
+    ostream << state[12] << state[1] << state[6] << state[11];
 
     return ostream.str();
   }
@@ -143,13 +144,13 @@ namespace {
   // Key Expansion
   //
   /* KeyExpansion(byte key[4*Nk], word w[Nb*(Nr+1)], Nk) */
-  std::vector<std::string> key_expansion(std::string key, std::string state, size_t nk = 4) {
+  std::vector<std::string> key_expansion(std::string key, size_t nk = 4) {
     // TODO: Set these: currently only for 128bits
     size_t i = 0, nb = 4, nr = 10;
 
     // Get our words vector
     size_t size = nb * (nr + 1);
-    auto words = make_word_vector( state, size );
+    auto words = make_word_vector( size );
 
     std::string temp; // temp word
 
@@ -174,6 +175,31 @@ namespace {
     }
 
     return words;
+  }
+
+  //
+  // AES Cipher
+  //
+  std::string cipher(std::string state, std::vector<std::string> key_schedule) {
+    // TODO: Set these: currently only for 128bits
+    size_t i = 0, nb = 4, nr = 10;
+
+    state = add_round_key( state, partition(key_schedule, 0, (nb-1) ) );
+    
+    // Loop through each round
+    for(int round = 1; round < (nr); ++round) {
+      state = substitute_bytes( state );
+      state = shift_rows( state );
+      state = mix_columns( state );
+      state = add_round_key( state, partition(key_schedule, (round * nb), ((round+1) * nb-1) ) );
+    }
+
+    // Last thing
+    state = substitute_bytes( state );
+    state = shift_rows( state );
+    state = add_round_key( state, partition(key_schedule, (nr * nb), ((nr+1) * nb-1) ) );
+
+    return state;
   }
 
 }
