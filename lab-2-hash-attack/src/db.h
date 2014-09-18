@@ -30,6 +30,15 @@ class Database {
       m_database[hash].push_back( original );
     }
 
+    bool collision_for_hash( std::string hash ) {
+
+      if( m_database.count(hash) > 0 ) {
+        return m_database[hash].size() > 1;
+      }
+
+      return false;
+    }
+
     int collision_count() {
       int acc = 0;
 

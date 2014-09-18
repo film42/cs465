@@ -3,23 +3,33 @@
 
 #include <openssl/sha.h>
 #include <string>
+#include <bitset>
+#include <sstream>
 
 namespace {
 
-  static std::string tiny_sha1( std::string input ) {
+  static std::string tiny_sha1( int bit_count,  std::string input ) {
 
-    unsigned char buffer[6];
+    unsigned char buffer[21];
 
-    memset(buffer, 0, 5);
+    SHA1((unsigned const char *)input.c_str(), input.length(), buffer);
 
-    SHA1((unsigned const char *)input.c_str(), 5, buffer);
+    std::string hash_string = std::string( (const char *)buffer, 20 );
 
-    return std::string( (const char *)buffer, 5 );
+    std::stringstream ostream;
+
+    for( char c : hash_string) {
+      ostream << std::bitset<8>( c ).to_string();
+    }
+
+    std::string binary_string = ostream.str();
+
+    return binary_string.substr(0, bit_count);
   }
 
   static std::string random_string() {
     // We want chars from 48 - 122
-    int string_size = 6;
+    int string_size = 16;
     std::string result;
     result.reserve(string_size);
 
@@ -30,11 +40,6 @@ namespace {
     }
 
     return result;
-  }
-
-  static std::string random_tiny_sha1() {
-
-    return tiny_sha1( random_string() );
   }
 
 };
