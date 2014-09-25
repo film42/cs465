@@ -20,6 +20,11 @@ class Database {
       return m_original_cache.count( original ) > 0;
     }
 
+    void erase() {
+      m_database.clear();
+      m_original_cache.clear();
+    }
+
     void insert( std::string original, std::string hash ) {
 
       if( m_database.count( hash ) <= 0 ) {
