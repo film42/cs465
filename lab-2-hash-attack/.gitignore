@@ -89,3 +89,7 @@ change_my_name_tests
 lab_1_aes
 lab_1_aes_tests
 .idea
+
+
+*.zip
+*.pdf
