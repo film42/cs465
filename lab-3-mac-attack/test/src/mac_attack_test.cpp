@@ -1,93 +1,43 @@
 #include <iostream>
-#include <cmath>
 
-#include "hash_attack.h"
-#include "db.h"
 #include "test_helper.h"
+#include "sha1.h"
 
-TEST(HashAttackTests, can_hash_any_string_to_tiny) {
+TEST(MacAttackTests, playground) {
 
-  auto result1 = tiny_sha1(12, "something longer");
+  SHA1 sha1;
 
-  EXPECT_EQ( 12 , result1.length() );
+  sha1.set_iv("f4b645e89faaec2ff8e443c595009c16dbdfba4b");
 
-  auto result2 = tiny_sha1(12, "");
+  std::string original = "No one has completed lab 2 so give them all a 0%";
+  std::string extension = "P. S. Give Garrett 100%";
+  size_t message_2_bit_size = extension.length() * 8;
+  size_t message_1_bit_size = original.size() * 8;
+  size_t key_length = 128;
+  size_t message_1_padding = 447 - ((message_1_bit_size + key_length) % 447);
+  size_t length = key_length + message_1_bit_size + message_1_padding + 64 + message_2_bit_size;
 
-  EXPECT_EQ( 12 , result2.length() );
+  sha1.update( extension );
+
+  EXPECT_EQ( 382, message_1_padding );
+  EXPECT_EQ( 64, gen_length(123).length() );
+  EXPECT_EQ( message_1_padding, padding(message_1_padding).length() );
+
+  auto out_string = original + padding(message_1_padding) +
+      gen_length(message_1_bit_size + key_length) + extension;
+
+  auto input =  string_to_hex( out_string );
+
+  std::cout << input << std::endl;
+  std::cout << out_string << std::endl;
+
+  std::cout << sha1.final( length ) << std::endl;
 }
 
-TEST(HashAttackTests, can_generate_random_string) {
+TEST(MacAttackTests, sha1_works) {
 
-  srand( 100 );
+  SHA1 sha1;
+  sha1.update("abc");
 
-  std::string random_string_1 = random_string();
-
-  srand( 100 );
-
-  std::string random_string_2 = random_string();
-
-  std::string different = random_string();
-
-  EXPECT_EQ( random_string_1 , random_string_2 );
-  EXPECT_TRUE( different != random_string_2 );
-}
-
-TEST(HashAttackTests, tiny_sha1_tests) {
-
-  srand( 100 );
-
-  std::string random_string_1 = random_string();
-  auto hash_1 = tiny_sha1(8, random_string_1 );
-
-  srand( 100 );
-
-  std::string random_string_2 = random_string();
-  auto hash_2 = tiny_sha1(8, random_string_2 );
-
-  std::string different = random_string();
-  auto hash_different = tiny_sha1(8, different);
-
-  EXPECT_EQ( random_string_1 , random_string_2 );
-  EXPECT_EQ( hash_1 , hash_2 );
-  EXPECT_TRUE( hash_different != hash_1 );
-}
-
-TEST(HashAttackTests, run_collision_attack) {
-
-  srand(std::time(0));
-
-  time_t start = std::time(0);
-
-  for(int i = 8; i <= 32; ++i) {
-
-    collision_test( i , 100 );
-
-    std::cout << std::endl;
-
-  }
-
-  std::cout << "Elapsed Time: " << ( std::time(0) - start ) << " Seconds" << std::endl;
-
-}
-
-TEST(HashAttackTests, can_do_pre_image_attack) {
-  return;
-
-  srand(std::time(0));
-
-  std::string pre_image = "hello, world! My name is...";
-
-  time_t start = std::time(0);
-
-  for(int i = 8; i <= 16; ++i) {
-
-    pre_image_test( i , 100, pre_image );
-
-    std::cout << std::endl;
-
-  }
-
-  std::cout << "Elapsed Time: " << ( std::time(0) - start ) << " Seconds" << std::endl;
-
-
+  EXPECT_EQ( "a9993e364706816aba3e25717850c26c9cd0d89d" , sha1.final() );
 }

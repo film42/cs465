@@ -22,17 +22,17 @@
 #include <iostream>
 #include <string>
 
+#include "data.h"
 
-class SHA1
-{
-public:
+class SHA1 {
+  public:
     SHA1();
     void update(const std::string &s);
     void update(std::istream &is);
     std::string final();
+    std::string final(uint64_t length);
     static std::string from_file(const std::string &filename);
 
-private:
     typedef unsigned long int uint32;   /* just needs to be at least 32bit */
     typedef unsigned long long uint64;  /* just needs to be at least 64bit */
 
@@ -45,6 +45,7 @@ private:
     uint64 transforms;
 
     void reset();
+    void set_iv(std::string digest);
     void transform(uint32 block[BLOCK_BYTES]);
 
     static void buffer_to_block(const std::string &buffer, uint32 block[BLOCK_BYTES]);

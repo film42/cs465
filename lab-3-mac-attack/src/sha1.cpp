@@ -50,52 +50,58 @@ void SHA1::update(std::istream &is)
 }
 
 
+std::string SHA1::final(uint64_t total_bits) {
+
+  /* Padding */
+  buffer += 0x80;
+  unsigned int orig_size = buffer.size();
+  while (buffer.size() < BLOCK_BYTES)
+  {
+    buffer += (char)0x00;
+  }
+
+  uint32 block[BLOCK_INTS];
+  buffer_to_block(buffer, block);
+
+  if (orig_size > BLOCK_BYTES - 8)
+  {
+    transform(block);
+    for (unsigned int i = 0; i < BLOCK_INTS - 2; i++)
+    {
+      block[i] = 0;
+    }
+  }
+
+  /* Append total_bits, split this uint64 into two uint32 */
+  block[BLOCK_INTS - 1] = total_bits;
+  block[BLOCK_INTS - 2] = (total_bits >> 32);
+  transform(block);
+
+  /* Hex std::string */
+  std::ostringstream result;
+  for (unsigned int i = 0; i < DIGEST_INTS; i++)
+  {
+    result << std::hex << std::setfill('0') << std::setw(8);
+    result << (digest[i] & 0xffffffff);
+  }
+
+  /* Reset for next run */
+  reset();
+
+  return result.str();
+}
+
+
 /*
  * Add padding and return the message digest.
  */
 
-std::string SHA1::final()
-{
+std::string SHA1::final() {
+
     /* Total number of hashed bits */
-    uint64 total_bits = (transforms*BLOCK_BYTES + buffer.size()) * 8;
+    uint64_t total_bits = (transforms*BLOCK_BYTES + buffer.size()) * 8;
 
-    /* Padding */
-    buffer += 0x80;
-    unsigned int orig_size = buffer.size();
-    while (buffer.size() < BLOCK_BYTES)
-    {
-        buffer += (char)0x00;
-    }
-
-    uint32 block[BLOCK_INTS];
-    buffer_to_block(buffer, block);
-
-    if (orig_size > BLOCK_BYTES - 8)
-    {
-        transform(block);
-        for (unsigned int i = 0; i < BLOCK_INTS - 2; i++)
-        {
-            block[i] = 0;
-        }
-    }
-
-    /* Append total_bits, split this uint64 into two uint32 */
-    block[BLOCK_INTS - 1] = total_bits;
-    block[BLOCK_INTS - 2] = (total_bits >> 32);
-    transform(block);
-
-    /* Hex std::string */
-    std::ostringstream result;
-    for (unsigned int i = 0; i < DIGEST_INTS; i++)
-    {
-        result << std::hex << std::setfill('0') << std::setw(8);
-        result << (digest[i] & 0xffffffff);
-    }
-
-    /* Reset for next run */
-    reset();
-
-    return result.str();
+    return final( total_bits );
 }
 
 
@@ -105,6 +111,21 @@ std::string SHA1::from_file(const std::string &filename)
     SHA1 checksum;
     checksum.update(stream);
     return checksum.final();
+}
+
+
+void SHA1::set_iv(std::string iv) {
+
+  /* SHA1 initialization constants */
+  digest[0] = hex_string_to_int( iv.substr(0, 4) );
+  digest[1] = hex_string_to_int( iv.substr(4, 4) );
+  digest[2] = hex_string_to_int( iv.substr(8, 4) );
+  digest[3] = hex_string_to_int( iv.substr(12, 4) );
+  digest[4] = hex_string_to_int( iv.substr(16) );
+
+  /* Reset counters */
+  transforms = 0;
+  buffer = "";
 }
 
 
