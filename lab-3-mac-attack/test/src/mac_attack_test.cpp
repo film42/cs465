@@ -20,8 +20,6 @@ TEST(MacAttackTests, playground) {
   uint64_t key_length = 128;
   uint64_t length_size = 64;
 
-  EXPECT_EQ( 520 , message_1_bit_size + key_length + length_size );
-
   uint64_t message_1_padding = 1024 - (message_1_bit_size + key_length + length_size);
   uint64_t message_1_full_length = key_length + message_1_bit_size + message_1_padding + length_size; // 376 + 128 + 456 + 64
   uint64_t length = message_1_full_length + message_2_bit_size;
@@ -49,8 +47,6 @@ TEST(MacAttackTests, playground) {
 
   std::cout << "Using hacked length: " << length << std::endl;
   std::string digest = sha1.final( length );
-
-  EXPECT_EQ( 1024, sever_message_base.str().length() );
 
   std::cout << "Hex: " << binary_string_to_hex_string( server_message.str() ) << std::endl;
 
