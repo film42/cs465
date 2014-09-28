@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <bitset>
+#include <sstream>
 
 
 typedef uint8_t byte_t;
@@ -28,22 +29,48 @@ namespace {
     return (uint32_t)strtol( hex.c_str(), NULL, 16 );
   }
 
-  static std::string padding(size_t size) {
+  static std::string binary_string_to_hex_string(std::string binary_string) {
+
+    if( binary_string.length() % 8 != 0) {
+      return "";
+    }
+
+    std::ostringstream ostream;
+
+    for(int i = 0; i < binary_string.length(); i += 8) {
+
+      ostream << std::hex << std::bitset<8>( binary_string.substr(i, 8) ).to_ulong();
+
+    }
+
+    return ostream.str();
+  }
+
+  static std::string string_to_binary_string(std::string input) {
+    std::ostringstream ostream;
+
+    for (size_t i = 0; i < input.size(); ++i) {
+      ostream << std::bitset<8>(input.c_str()[i]).to_string();
+    }
+
+    return ostream.str();
+  }
+
+  static std::string padding(uint64_t size) {
 
     std::string result = "1";
-    --size;
 
     // Append until the end
-    while(size > 0) {
+    for(; 0 < size - 1; --size) {
       result += "0";
-      --size;
     }
 
     return result;
   }
 
-  static std::string gen_length(size_t size) {
-    return std::bitset< 64 >( size ).to_string();
+  static std::string gen_length(uint64_t size) {
+    std::cout << "Generating size: " << size << std::endl;
+    return std::bitset<64>( size ).to_string();
   }
 
 }

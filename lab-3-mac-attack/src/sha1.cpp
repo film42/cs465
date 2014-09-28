@@ -34,23 +34,21 @@ void SHA1::update(const std::string &s)
 }
 
 
-void SHA1::update(std::istream &is)
-{
-    std::string rest_of_buffer;
-    read(is, rest_of_buffer, BLOCK_BYTES - buffer.size());
-    buffer += rest_of_buffer;
+void SHA1::update(std::istream &is) {
+  std::string rest_of_buffer;
+  read(is, rest_of_buffer, BLOCK_BYTES - buffer.size());
+  buffer += rest_of_buffer;
 
-    while (is)
-    {
-        uint32 block[BLOCK_INTS];
-        buffer_to_block(buffer, block);
-        transform(block);
-        read(is, buffer, BLOCK_BYTES);
-    }
+  while (is) {
+    uint32 block[BLOCK_INTS];
+    buffer_to_block(buffer, block);
+    transform(block);
+    read(is, buffer, BLOCK_BYTES);
+  }
 }
 
 
-std::string SHA1::final(uint64_t total_bits) {
+std::string SHA1::final(uint64_t length) {
 
   /* Padding */
   buffer += 0x80;
@@ -73,8 +71,9 @@ std::string SHA1::final(uint64_t total_bits) {
   }
 
   /* Append total_bits, split this uint64 into two uint32 */
-  block[BLOCK_INTS - 1] = total_bits;
-  block[BLOCK_INTS - 2] = (total_bits >> 32);
+  block[BLOCK_INTS - 1] = length;
+  block[BLOCK_INTS - 2] = (length >> 32);
+
   transform(block);
 
   /* Hex std::string */
@@ -98,10 +97,10 @@ std::string SHA1::final(uint64_t total_bits) {
 
 std::string SHA1::final() {
 
-    /* Total number of hashed bits */
-    uint64_t total_bits = (transforms*BLOCK_BYTES + buffer.size()) * 8;
+  /* Total number of hashed bits */
+  uint64_t total_bits = (transforms*BLOCK_BYTES + buffer.size()) * 8;
 
-    return final( total_bits );
+  return final( total_bits );
 }
 
 
@@ -117,15 +116,12 @@ std::string SHA1::from_file(const std::string &filename)
 void SHA1::set_iv(std::string iv) {
 
   /* SHA1 initialization constants */
-  digest[0] = hex_string_to_int( iv.substr(0, 4) );
-  digest[1] = hex_string_to_int( iv.substr(4, 4) );
-  digest[2] = hex_string_to_int( iv.substr(8, 4) );
-  digest[3] = hex_string_to_int( iv.substr(12, 4) );
-  digest[4] = hex_string_to_int( iv.substr(16) );
+  digest[0] = hex_string_to_int( iv.substr(0, 8) );
+  digest[1] = hex_string_to_int( iv.substr(8, 8) );
+  digest[2] = hex_string_to_int( iv.substr(16, 8) );
+  digest[3] = hex_string_to_int( iv.substr(24, 8) );
+  digest[4] = hex_string_to_int( iv.substr(32) );
 
-  /* Reset counters */
-  transforms = 0;
-  buffer = "";
 }
 
 

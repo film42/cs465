@@ -1,3 +1,6 @@
+#ifndef SHA1_HPP
+#define SHA1_HPP
+
 /*
     sha1.h - header of
 
@@ -14,10 +17,6 @@
     Translation to simpler C++ Code
         -- Volker Grabsch <vog@notjusthosting.com>
 */
-
-#ifndef SHA1_HPP
-#define SHA1_HPP
-
 
 #include <iostream>
 #include <string>
